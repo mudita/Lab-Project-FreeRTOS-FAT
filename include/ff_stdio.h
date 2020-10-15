@@ -128,7 +128,7 @@ typedef struct
 /* The errno is stored in a thread local buffer. */
 static portINLINE void stdioSET_ERRNO( int iErrno )
 {
-	vTaskSetThreadLocalStoragePointer( NULL, ffconfigCWD_THREAD_LOCAL_INDEX, ( void * ) ( iErrno ) );
+	vTaskSetThreadLocalStoragePointer( NULL, ffconfigCWD_THREAD_LOCAL_INDEX, ( void * )(uintptr_t)( iErrno ) );
 }
 
 static portINLINE int stdioGET_ERRNO( void )
@@ -136,7 +136,7 @@ static portINLINE int stdioGET_ERRNO( void )
 void *pvResult;
 
 	pvResult = pvTaskGetThreadLocalStoragePointer( ( TaskHandle_t )NULL, ffconfigCWD_THREAD_LOCAL_INDEX );
-	return ( int ) pvResult;
+	return ( int ) (uintptr_t)pvResult;
 }
 
 #if( ( configNUM_THREAD_LOCAL_STORAGE_POINTERS - ffconfigCWD_THREAD_LOCAL_INDEX ) < 3 )
@@ -148,7 +148,7 @@ void *pvResult;
  */
 static portINLINE void stdioSET_FF_ERROR( FF_Error_t iFF_ERROR )
 {
-	vTaskSetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET, ( void * ) ( iFF_ERROR ) );
+	vTaskSetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET, ( void * )(uintptr_t) ( iFF_ERROR ) );
 }
 
 /*
@@ -160,7 +160,7 @@ static portINLINE FF_Error_t stdioGET_FF_ERROR( void )
 void *pvResult;
 
 	pvResult = pvTaskGetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET );
-	return ( FF_Error_t ) pvResult;
+	return ( FF_Error_t )(uintptr_t) pvResult;
 }
 
 /*-----------------------------------------------------------
