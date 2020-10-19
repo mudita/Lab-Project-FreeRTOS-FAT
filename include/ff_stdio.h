@@ -128,7 +128,6 @@ typedef struct
 void *  ff_stdio_pvTaskGetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex ) __attribute__((weak));
 void ff_stdio_vTaskSetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex, void *pvValue ) __attribute__((weak));
 #else
-#error x
 static inline
 void * __attribute__((always_inline)) ff_stdio_pvTaskGetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex )
 {
