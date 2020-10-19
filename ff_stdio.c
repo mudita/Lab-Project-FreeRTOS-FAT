@@ -122,7 +122,7 @@ void ff_stdio_vTaskSetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_
 	 * This function uses recursion - which breaches the coding standard.  USE
 	 * WITH CARE.
 	 */
-	static int ff_deltree_recurse( char *pcPath );
+	static int ff_deltree_recurse( char *pcPath,  void (*onFileRemoved)(void*, const char*), void *context );
 #endif
 
 /*
@@ -1602,7 +1602,7 @@ uint32_t ulLength;
  * Delete a directory and, recursively, all of its contents
  *-----------------------------------------------------------*/
 #if( ffconfigUSE_DELTREE != 0 )
-	int ff_deltree( const char *pcDirectory )
+	int ff_deltree( const char *pcDirectory,void (*onFileRemoved)(void*, const char*), void* context )
 	{
 	int iResult;
 	char *pcPath;
@@ -1614,7 +1614,7 @@ uint32_t ulLength;
 			pcDirectory = prvABSPath( pcDirectory );
 			snprintf (pcPath, ffconfigMAX_FILENAME, "%s", pcDirectory);
 			/* This recursive function will do all the work */
-			iResult = ff_deltree_recurse (pcPath);
+			iResult = ff_deltree_recurse (pcPath,onFileRemoved, context);
 			if( iResult >= 0 )
 			{
 				iResult = ff_rmdir( pcPath );
@@ -1636,7 +1636,7 @@ uint32_t ulLength;
 /*-----------------------------------------------------------*/
 
 #if( ffconfigUSE_DELTREE != 0 )
-	static int ff_deltree_recurse( char *pcPath )
+	static int ff_deltree_recurse( char *pcPath, void (*onFileRemoved)(void*, const char*), void *context)
 	{
 	FF_FindData_t *pxFindData;
 	BaseType_t xIsDir, xIsDotDir;
@@ -1686,7 +1686,7 @@ uint32_t ulLength;
 							iNext = ff_findnext( pxFindData );
 
 							/* Remove the contents of this directory. */
-							iResult = ff_deltree_recurse( pcPath );
+							iResult = ff_deltree_recurse( pcPath, onFileRemoved, context);
 							if( iResult < 0 )
 							{
 								iCount = -1;
@@ -1727,6 +1727,7 @@ uint32_t ulLength;
 						else
 						{
 							iCount++;
+                            if(onFileRemoved) onFileRemoved(context, pcPath);
 						}
 					}
 					else

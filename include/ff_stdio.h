@@ -290,7 +290,7 @@ int ff_rmdir( const char *pcDirectory );
 		Stack : 48 (12 stack words)
 		Heap  : 112 + ffconfigMAX_FILENAME
 	These numbers may change depending on CPU and compiler. */
-	int ff_deltree( const char *pcPath );
+	int ff_deltree( const char *pcPath, void (*onFileRemoved)(void*, const char*), void* context );
 #endif
 
 /*-----------------------------------------------------------
