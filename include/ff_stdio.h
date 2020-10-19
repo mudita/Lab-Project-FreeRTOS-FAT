@@ -124,18 +124,35 @@ typedef struct
 
 	_RB_ comments are incorrect and index should use the stdioERRNO_THREAD_LOCAL_OFFSET offset.
 */
+#ifdef TARGET_Linux
+void *  ff_stdio_pvTaskGetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex ) __attribute__((weak));
+void ff_stdio_vTaskSetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex, void *pvValue ) __attribute__((weak));
+#else
+#error x
+static inline
+void * __attribute__((always_inline)) ff_stdio_pvTaskGetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex )
+{
+	return pvTaskGetThreadLocalStoragePointer(xhandle,xIndex);
+}
+static inline
+void __attribute__((always_inline)) ff_stdio_vTaskSetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex, void *pvValue )
+{
+	vTaskSetThreadLocalStoragePointer( xhandle, xIndex, pvValue );
+}
+#endif
+
 
 /* The errno is stored in a thread local buffer. */
 static portINLINE void stdioSET_ERRNO( int iErrno )
 {
-	vTaskSetThreadLocalStoragePointer( NULL, ffconfigCWD_THREAD_LOCAL_INDEX, ( void * )(uintptr_t)( iErrno ) );
+	ff_stdio_vTaskSetThreadLocalStoragePointer( NULL, ffconfigCWD_THREAD_LOCAL_INDEX, ( void * )(uintptr_t)( iErrno ) );
 }
 
 static portINLINE int stdioGET_ERRNO( void )
 {
 void *pvResult;
 
-	pvResult = pvTaskGetThreadLocalStoragePointer( ( TaskHandle_t )NULL, ffconfigCWD_THREAD_LOCAL_INDEX );
+	pvResult = ff_stdio_pvTaskGetThreadLocalStoragePointer( ( TaskHandle_t )NULL, ffconfigCWD_THREAD_LOCAL_INDEX );
 	return ( int ) (uintptr_t)pvResult;
 }
 
@@ -148,7 +165,7 @@ void *pvResult;
  */
 static portINLINE void stdioSET_FF_ERROR( FF_Error_t iFF_ERROR )
 {
-	vTaskSetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET, ( void * )(uintptr_t) ( iFF_ERROR ) );
+	ff_stdio_vTaskSetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET, ( void * )(uintptr_t) ( iFF_ERROR ) );
 }
 
 /*
@@ -159,7 +176,7 @@ static portINLINE FF_Error_t stdioGET_FF_ERROR( void )
 {
 void *pvResult;
 
-	pvResult = pvTaskGetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET );
+	pvResult = ff_stdio_pvTaskGetThreadLocalStoragePointer( NULL, stdioFF_ERROR_THREAD_LOCAL_OFFSET );
 	return ( FF_Error_t )(uintptr_t) pvResult;
 }
 

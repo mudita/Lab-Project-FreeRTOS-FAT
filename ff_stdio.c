@@ -54,6 +54,17 @@ in a call to ff_truncate(). */
 #define stdioDOT_ENTRY_FILE_SIZE			1024
 
 /*-----------------------------------------------------------*/
+#ifdef TARGET_Linux
+void * ff_stdio_pvTaskGetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex )
+{
+	return pvTaskGetThreadLocalStoragePointer(xhandle,xIndex);
+}
+
+void ff_stdio_vTaskSetThreadLocalStoragePointer( TaskHandle_t xhandle, BaseType_t xIndex, void *pvValue )
+{
+	vTaskSetThreadLocalStoragePointer( xhandle, xIndex, pvValue );
+}
+#endif
 
 #if( ffconfigHAS_CWD == 1 )
 
@@ -1839,14 +1850,13 @@ int prvFFErrorToErrno( FF_Error_t xError )
 		pxSpace = ( WorkingDirectory_t * ) pvTaskGetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET );
 		if( pxSpace != NULL )
 		{
-			vTaskSetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET, ( void * ) NULL );
+			ff_stdio_vTaskSetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET, ( void * ) NULL );
 			ffconfigFREE( pxSpace );
 		}
 	}
 
 #endif /* ffconfigHAS_CWD */
 /*-----------------------------------------------------------*/
-
 #if( ffconfigHAS_CWD == 1 )
 
 	static WorkingDirectory_t *pxFindCWD( void )
@@ -1854,7 +1864,7 @@ int prvFFErrorToErrno( FF_Error_t xError )
 	WorkingDirectory_t *pxReturn;
 
 		/* Obtain the CWD used by the current task. */
-		pxReturn = ( WorkingDirectory_t * ) pvTaskGetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET );
+		pxReturn = ( WorkingDirectory_t * ) ff_stdio_pvTaskGetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET );
 
 		if( pxReturn == NULL )
 		{
@@ -1865,7 +1875,7 @@ int prvFFErrorToErrno( FF_Error_t xError )
 			if( pxReturn != NULL )
 			{
 				pxReturn->pcCWD[ 0 ] = '\0';
-				vTaskSetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET, ( void * ) pxReturn );
+				ff_stdio_vTaskSetThreadLocalStoragePointer( NULL, stdioCWD_THREAD_LOCAL_OFFSET, ( void * ) pxReturn );
 			}
 		}
 
